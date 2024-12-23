@@ -9,22 +9,24 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  optimizeDeps: {
-    include: ['react-pdf'],
+  server: {
+    port: 3000,
+    fs: {
+      // Allow serving files from one level up to the project root
+      allow: ['..'],
+    },
   },
+  base: '/',
   build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: true,
     rollupOptions: {
       output: {
         manualChunks: {
           pdfjs: ['pdfjs-dist'],
         },
       },
-    },
-  },
-  server: {
-    fs: {
-      // Allow serving files from one level up to the project root
-      allow: ['..'],
     },
   },
 });
