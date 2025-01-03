@@ -11,9 +11,13 @@ const LawyerDashboard = () => {
 
   useEffect(() => {
     const fetchLawyerData = async () => {
+      try{
       const response = await apiService.getLawyerDashboardData();
       setLawyerData(response.lawyerData);
       setRecentActivities(response.recentActivities);
+      } catch (error) {
+        console.log('Error fetching lawyer data:', error);
+      }
     };
 
     fetchLawyerData();
