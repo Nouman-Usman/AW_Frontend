@@ -1,16 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { FaBriefcase, FaUser, FaStar, FaCalendar, FaComments } from 'react-icons/fa';
-import io from 'socket.io-client';
 import apiService from '../services/api';
 
 const LawyerDashboard = () => {
-  const [showChat, setShowChat] = useState(false);
-  const [messages, setMessages] = useState([]);
-  const [message, setMessage] = useState('');
-  const [chatId, setChatId] = useState(null);
   const [lawyerData, setLawyerData] = useState({});
   const [recentActivities, setRecentActivities] = useState([]);
-  const socket = io('http://localhost:5000');
   const [displayName, setDisplayName] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [delta, setDelta] = useState(200);
@@ -27,20 +21,6 @@ const LawyerDashboard = () => {
 
     return () => clearInterval(intervalId); // Cleanup interval on component unmount
   }, []);
-
-  useEffect(() => {
-    if (chatId) {
-      socket.emit('join', { chat_id: chatId });
-      socket.on('message', (msg) => {
-        setMessages((prevMessages) => [...prevMessages, msg]);
-      });
-
-      return () => {
-        socket.emit('leave', { chat_id: chatId });
-        socket.off('message');
-      };
-    }
-  }, [chatId]);
 
   useEffect(() => {
     // Get user name from localStorage
@@ -76,18 +56,6 @@ const LawyerDashboard = () => {
     }
   };
 
-  const startChat = async (recipientId) => {
-    const response = await apiService.startChat(recipientId);
-    setChatId(response.chat_id);
-  };
-
-  const sendMessage = () => {
-    if (message.trim()) {
-      socket.emit('message', { chat_id: chatId, message });
-      setMessage('');
-    }
-  };
-
   return (
     <div className="min-h-screen bg-[#030614] p-8 pt-24 relative overflow-hidden opacity-0 animate-fadeIn">
       {/* Add purple luminous background effects */}
@@ -107,50 +75,6 @@ const LawyerDashboard = () => {
         </h1>
         <p className="text-gray-400">Here's your dashboard overview</p>
       </div>
-
-      {/* Chat Icon with pulse effect */}
-      <div className="fixed bottom-8 right-8">
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-[#9333EA] to-[#7E22CE] rounded-full blur opacity-75 group-hover:opacity-100 animate-pulse"></div>
-        <button
-          className="relative bg-[#9333EA] text-white p-4 rounded-full shadow-lg hover:bg-[#7E22CE] transition-all duration-300 hover:scale-110 hover:shadow-[0_0_20px_rgba(147,51,234,0.5)]"
-          onClick={() => setShowChat(!showChat)}
-        >
-          <FaComments size={24} />
-        </button>
-      </div>
-
-      {/* Chat Card with enhanced animation */}
-      {showChat && (
-        <div className="fixed bottom-20 right-8 bg-[#030614] rounded-lg p-4 w-80 
-          animate-slideIn border border-[#9333EA]/30
-          shadow-[0_0_25px_rgba(147,51,234,0.2)]
-          hover:shadow-[0_0_30px_rgba(147,51,234,0.3)]
-          backdrop-blur-lg relative z-10
-          animate-borderGlow">
-          <h2 className="text-xl font-semibold mb-4 text-white">Chat</h2>
-          <div className="h-64 overflow-y-scroll mb-4">
-            {messages.map((msg, index) => (
-              <div key={index} className="mb-2">
-                <div className="bg-gray-700 p-2 rounded text-white">{msg.message}</div>
-              </div>
-            ))}
-          </div>
-          <div className="flex">
-            <input
-              type="text"
-              className="flex-1 border border-gray-600 rounded-l p-2 bg-[#030614] text-white"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-            />
-            <button
-              className="bg-[#9333EA] text-white p-2 rounded-r hover:bg-[#7E22CE] transition"
-              onClick={sendMessage}
-            >
-              Send
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Stats Grid with hover effects */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 relative z-10">
